@@ -3,18 +3,21 @@ export const BUILD_UP_TARGET = 4;
 
 export type Side = 'home' | 'away';
 export type MatchPhase = 'ready' | 'passing' | 'shooting' | 'finished';
+export type PlayerLayer = 'back' | 'middle' | 'front';
+export type PlayerLane = 'left' | 'center' | 'right';
 
-export interface PlayerCard {
+export interface PlayerDefinition {
   id: string;
   name: string;
-  role: string;
   attack: number;
   defense: number;
+  layer: PlayerLayer;
+  lane: PlayerLane;
 }
 
 export interface TeamDefinition {
   name: string;
-  cards: PlayerCard[];
+  players: PlayerDefinition[];
 }
 
 export interface TeamState {
@@ -43,28 +46,28 @@ export interface MatchState {
 
 export const HOME_TEAM: TeamDefinition = {
   name: 'Home',
-  cards: [
-    { id: 'home-gk', name: 'H. Keeper', role: 'GK', attack: 2, defense: 12 },
-    { id: 'home-cb', name: 'H. Anchor', role: 'DEF', attack: 4, defense: 10 },
-    { id: 'home-m1', name: 'H. Link', role: 'MID', attack: 6, defense: 7 },
-    { id: 'home-m2', name: 'H. Pivot', role: 'MID', attack: 5, defense: 6 },
-    { id: 'home-st', name: 'H. Finisher', role: 'FWD', attack: 11, defense: 5 },
+  players: [
+    { id: 'home-gk', name: 'H. Keeper', attack: 2, defense: 12, layer: 'back', lane: 'left' },
+    { id: 'home-cb', name: 'H. Anchor', attack: 4, defense: 10, layer: 'back', lane: 'right' },
+    { id: 'home-m1', name: 'H. Link', attack: 6, defense: 7, layer: 'middle', lane: 'right' },
+    { id: 'home-m2', name: 'H. Pivot', attack: 5, defense: 6, layer: 'middle', lane: 'left' },
+    { id: 'home-st', name: 'H. Finisher', attack: 11, defense: 5, layer: 'front', lane: 'center' },
   ],
 };
 
 export const AWAY_TEAM: TeamDefinition = {
   name: 'Away',
-  cards: [
-    { id: 'away-gk', name: 'A. Keeper', role: 'GK', attack: 2, defense: 12 },
-    { id: 'away-cb', name: 'A. Anchor', role: 'DEF', attack: 4, defense: 10 },
-    { id: 'away-m1', name: 'A. Link', role: 'MID', attack: 5, defense: 7 },
-    { id: 'away-m2', name: 'A. Pivot', role: 'MID', attack: 6, defense: 6 },
-    { id: 'away-st', name: 'A. Finisher', role: 'FWD', attack: 7, defense: 5 },
+  players: [
+    { id: 'away-gk', name: 'A. Keeper', attack: 2, defense: 12, layer: 'back', lane: 'left' },
+    { id: 'away-cb', name: 'A. Anchor', attack: 4, defense: 10, layer: 'back', lane: 'right' },
+    { id: 'away-m1', name: 'A. Link', attack: 5, defense: 7, layer: 'middle', lane: 'right' },
+    { id: 'away-m2', name: 'A. Pivot', attack: 6, defense: 6, layer: 'middle', lane: 'left' },
+    { id: 'away-st', name: 'A. Finisher', attack: 7, defense: 5, layer: 'front', lane: 'center' },
   ],
 };
 
 export function totalDefense(team: TeamDefinition): number {
-  return team.cards.reduce((total, card) => total + card.defense, 0);
+  return team.players.reduce((total, player) => total + player.defense, 0);
 }
 
 export function createMatch(): MatchState {

@@ -1,5 +1,10 @@
 import Phaser from 'phaser';
 import {
+  createTeamGraph,
+  planPassingRoute,
+  type TeamGraph,
+} from './graph';
+import {
   AWAY_TEAM,
   BUILD_UP_TARGET,
   HOME_TEAM,
@@ -9,7 +14,9 @@ import {
   resolveShot,
   startAttack,
   type MatchState,
-  type PlayerCard,
+  type PlayerDefinition,
+  type PlayerLane,
+  type PlayerLayer,
   type Side,
   type TeamDefinition,
 } from './model';
@@ -25,7 +32,7 @@ const COLORS = {
   ink: 0xffffff,
   home: 0x177a52,
   away: 0xc45b27,
-  card: 0xffffff,
+  node: 0xffffff,
   ball: 0xf1c644,
   danger: 0xd44b4b,
   button: 0x18211d,
@@ -38,23 +45,37 @@ interface Point {
   y: number;
 }
 
-const CARD_POSITIONS: Record<string, Point> = {
-  'away-gk': { x: 165, y: 215 },
-  'away-cb': { x: 435, y: 215 },
-  'away-m1': { x: 435, y: 325 },
-  'away-m2': { x: 165, y: 325 },
-  'away-st': { x: 300, y: 435 },
-  'home-st': { x: 300, y: 545 },
-  'home-m2': { x: 165, y: 655 },
-  'home-m1': { x: 435, y: 655 },
-  'home-cb': { x: 435, y: 765 },
-  'home-gk': { x: 165, y: 765 },
+const LANE_X: Record<PlayerLane, number> = {
+  left: 155,
+  center: 300,
+  right: 445,
+};
+
+const LAYER_Y: Record<Side, Record<PlayerLayer, number>> = {
+  away: { back: 215, middle: 325, front: 435 },
+  home: { back: 765, middle: 655, front: 545 },
+};
+
+const TEAM_GRAPHS: Record<Side, TeamGraph> = {
+  home: createTeamGraph(HOME_TEAM),
+  away: createTeamGraph(AWAY_TEAM),
 };
 
 const ROUTES: Record<Side, string[]> = {
-  home: HOME_TEAM.cards.map((card) => card.id),
-  away: AWAY_TEAM.cards.map((card) => card.id),
+  home: planPassingRoute(TEAM_GRAPHS.home, BUILD_UP_TARGET),
+  away: planPassingRoute(TEAM_GRAPHS.away, BUILD_UP_TARGET),
 };
+
+const NODE_POSITIONS = new Map<string, Point>();
+[HOME_TEAM, AWAY_TEAM].forEach((team, index) => {
+  const side: Side = index === 0 ? 'home' : 'away';
+  team.players.forEach((player) => {
+    NODE_POSITIONS.set(player.id, {
+      x: LANE_X[player.lane],
+      y: LAYER_Y[side][player.layer],
+    });
+  });
+});
 
 export class GameScene extends Phaser.Scene {
   private match: MatchState = createMatch();
@@ -70,8 +91,9 @@ export class GameScene extends Phaser.Scene {
   private eventText!: Phaser.GameObjects.Text;
   private buttonText!: Phaser.GameObjects.Text;
   private buttonBackground!: Phaser.GameObjects.Rectangle;
+  private pathTrail!: Phaser.GameObjects.Graphics;
   private buildPips: Phaser.GameObjects.Rectangle[] = [];
-  private cardBodies = new Map<string, Phaser.GameObjects.Rectangle>();
+  private nodeBodies = new Map<string, Phaser.GameObjects.Arc>();
 
   constructor() {
     super('match');
@@ -83,8 +105,9 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.centerOn(300, 500);
     this.drawHeader();
     this.drawPitch();
-    this.drawTeam(HOME_TEAM, 'home');
-    this.drawTeam(AWAY_TEAM, 'away');
+    this.pathTrail = this.add.graphics().setDepth(4);
+    this.drawTeamGraph(HOME_TEAM, 'home');
+    this.drawTeamGraph(AWAY_TEAM, 'away');
     this.createBall();
     this.createActionButton();
     this.updatePresentation('HOME ATTACK READY');
@@ -149,27 +172,37 @@ export class GameScene extends Phaser.Scene {
     this.eventText = this.addText(300, 868, '', 16, COLORS.paper).setOrigin(0.5, 0);
   }
 
-  private drawTeam(team: TeamDefinition, side: Side): void {
+  private drawTeamGraph(team: TeamDefinition, side: Side): void {
     const color = side === 'home' ? COLORS.home : COLORS.away;
-    team.cards.forEach((card) => this.drawCard(card, color));
+    const edgeGraphics = this.add.graphics().setDepth(1);
+    TEAM_GRAPHS[side].edges.forEach((edge) => {
+      const from = this.nodePosition(edge.from);
+      const to = this.nodePosition(edge.to);
+      edgeGraphics.lineStyle(edge.kind === 'lateral' ? 2 : 3, color, edge.kind === 'lateral' ? 0.28 : 0.38);
+      edgeGraphics.lineBetween(from.x, from.y, to.x, to.y);
+    });
+
+    team.players.forEach((player) => this.drawNode(player, color));
   }
 
-  private drawCard(card: PlayerCard, color: number): void {
-    const position = CARD_POSITIONS[card.id];
-    const container = this.add.container(position.x, position.y);
-    const body = this.add.rectangle(0, 0, 180, 82, COLORS.card).setStrokeStyle(2, color, 0.75);
+  private drawNode(player: PlayerDefinition, color: number): void {
+    const position = this.nodePosition(player.id);
+    const container = this.add.container(position.x, position.y).setDepth(10);
+    const body = this.add.circle(0, 0, 41, COLORS.node).setStrokeStyle(3, color, 0.82);
+    const divider = this.add.rectangle(0, 0, 48, 1, color, 0.2);
 
     container.add([
       body,
-      this.addText(0, -28, `ATTACK ${String(card.attack).padStart(2, '0')}`, 17, color).setOrigin(0.5, 0),
-      this.addText(0, 4, `DEFENSE ${String(card.defense).padStart(2, '0')}`, 17, COLORS.paper).setOrigin(0.5, 0),
+      divider,
+      this.addText(0, -24, `A ${player.attack}`, 14, color).setOrigin(0.5, 0),
+      this.addText(0, 7, `D ${player.defense}`, 14, COLORS.paper).setOrigin(0.5, 0),
     ]);
-    this.cardBodies.set(card.id, body);
+    this.nodeBodies.set(player.id, body);
   }
 
   private createBall(): void {
-    const start = CARD_POSITIONS[ROUTES.home[0]];
-    this.ball = this.add.circle(start.x, start.y + 51, 10, COLORS.ball)
+    const start = this.nodePosition(ROUTES.home[0]);
+    this.ball = this.add.circle(start.x, start.y, 8, COLORS.ball)
       .setStrokeStyle(3, COLORS.paper)
       .setDepth(20);
   }
@@ -207,9 +240,10 @@ export class GameScene extends Phaser.Scene {
     this.announce(`${this.sideLabel(this.match.attacking)} possession started.`);
 
     const route = ROUTES[this.match.attacking];
-    const start = CARD_POSITIONS[route[0]];
-    this.ball.setPosition(start.x, start.y + 51).setVisible(true);
-    this.highlightCard(route[0]);
+    const start = this.nodePosition(route[0]);
+    this.pathTrail.clear();
+    this.ball.setPosition(start.x, start.y).setVisible(true);
+    this.highlightNode(route[0]);
     this.time.delayedCall(260, () => this.animatePass(route, 1));
   }
 
@@ -220,22 +254,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     const targetId = route[routeIndex];
-    const target = CARD_POSITIONS[targetId];
-    const line = this.add.graphics().setDepth(5);
-    line.lineStyle(2, this.sideColor(this.match.attacking), 0.55);
-    line.lineBetween(this.ball.x, this.ball.y, target.x, target.y + 51);
+    const target = this.nodePosition(targetId);
+    this.pathTrail.lineStyle(5, this.sideColor(this.match.attacking), 0.62);
+    this.pathTrail.lineBetween(this.ball.x, this.ball.y, target.x, target.y);
     this.eventText.setText(`PASS ${routeIndex} / ${BUILD_UP_TARGET}`);
 
     this.tweens.add({
       targets: this.ball,
       x: target.x,
-      y: target.y + 51,
+      y: target.y,
       duration: 400,
       ease: 'Sine.easeInOut',
       onComplete: () => {
-        line.destroy();
         this.match = completePass(this.match);
-        this.highlightCard(targetId);
+        this.highlightNode(targetId);
         this.updatePresentation();
         this.announce(`Pass ${routeIndex} completed. Build-Up ${this.match.buildUp} of ${BUILD_UP_TARGET}.`);
         this.time.delayedCall(140, () => this.animatePass(route, routeIndex + 1));
@@ -246,8 +278,8 @@ export class GameScene extends Phaser.Scene {
   private animateShot(shooterId: string): void {
     const attackingSide = this.match.attacking;
     const team = this.teamFor(attackingSide);
-    const shooter = team.cards.find((card) => card.id === shooterId);
-    if (!shooter) throw new Error(`Missing shooter card: ${shooterId}`);
+    const shooter = team.players.find((player) => player.id === shooterId);
+    if (!shooter) throw new Error(`Missing shooter node: ${shooterId}`);
 
     const goal = attackingSide === 'home' ? { x: 300, y: 144 } : { x: 300, y: 836 };
     const line = this.add.graphics().setDepth(5);
@@ -305,9 +337,9 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    const nextStart = CARD_POSITIONS[ROUTES[this.match.attacking][0]];
-    this.ball.setPosition(nextStart.x, nextStart.y + 51);
-    this.highlightCard(ROUTES[this.match.attacking][0]);
+    const nextStart = this.nodePosition(ROUTES[this.match.attacking][0]);
+    this.ball.setPosition(nextStart.x, nextStart.y);
+    this.highlightNode(ROUTES[this.match.attacking][0]);
     this.updatePresentation(`${this.sideLabel(this.match.attacking)} POSSESSION`);
     this.buttonText.setText('MATCH IN PROGRESS');
     this.announce(`${this.sideLabel(this.match.attacking)} prepares the next possession.`);
@@ -317,9 +349,10 @@ export class GameScene extends Phaser.Scene {
   private restartMatch(): void {
     this.tweens.killAll();
     this.match = createMatch();
-    const start = CARD_POSITIONS[ROUTES.home[0]];
-    this.ball.setPosition(start.x, start.y + 51).setScale(1).setVisible(true);
-    this.highlightCard(ROUTES.home[0]);
+    const start = this.nodePosition(ROUTES.home[0]);
+    this.pathTrail.clear();
+    this.ball.setPosition(start.x, start.y).setScale(1).setVisible(true);
+    this.highlightNode(ROUTES.home[0]);
     this.eventText.setColor(this.toCss(COLORS.home));
     this.updatePresentation('HOME ATTACK READY');
     this.announce('New five-round match. Home attacks first.');
@@ -363,15 +396,21 @@ export class GameScene extends Phaser.Scene {
     if (event) this.eventText.setText(event);
   }
 
-  private highlightCard(cardId: string): void {
-    this.cardBodies.forEach((body, id) => {
+  private highlightNode(nodeId: string): void {
+    this.nodeBodies.forEach((body, id) => {
       const side: Side = id.startsWith('home') ? 'home' : 'away';
-      if (id === cardId) {
+      if (id === nodeId) {
         body.setStrokeStyle(4, COLORS.ball, 1);
       } else {
-        body.setStrokeStyle(2, this.sideColor(side), 0.72);
+        body.setStrokeStyle(3, this.sideColor(side), 0.82);
       }
     });
+  }
+
+  private nodePosition(playerId: string): Point {
+    const position = NODE_POSITIONS.get(playerId);
+    if (!position) throw new Error(`Missing graph position for ${playerId}.`);
+    return position;
   }
 
   private teamFor(side: Side): TeamDefinition {

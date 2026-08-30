@@ -9,8 +9,10 @@ A wireframe Phaser prototype for validating the Football Battler core loop.
 ## Current rules
 
 - Five rounds, with one Home attack and one Away attack per round.
-- Five static cards per team show their Attack and Defense values.
-- Four guaranteed passes fill the shared Build-Up track.
+- Five player nodes per team form back, middle, and front graph layers.
+- Placement generates lateral edges within layers and passing edges between adjacent layers.
+- Nodes show only abbreviated Attack (`A`) and Defense (`D`) values.
+- Four guaranteed passes follow a valid graph route and fill the shared Build-Up track.
 - The player holding the ball when Build-Up is full takes the shot.
 - Shot damage reduces the opposing team's persistent Defense.
 - Reducing Defense to zero scores one point. Exhausted Defense stays at zero, so every later shot scores again.

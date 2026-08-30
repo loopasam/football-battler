@@ -26,7 +26,7 @@ function playAttack(state: MatchState, damage: number): MatchState {
 }
 
 describe('Football Battler match model', () => {
-  it('builds each team defense from the cards', () => {
+  it('builds each team defense from the player nodes', () => {
     const match = createMatch();
 
     expect(totalDefense(HOME_TEAM)).toBe(40);

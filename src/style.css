@@ -1,0 +1,118 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #07100e;
+  color: #e9f1e6;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(132, 255, 187, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132, 255, 187, 0.035) 1px, transparent 1px),
+    #07100e;
+  background-size: 32px 32px;
+}
+
+.page-shell {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 28px clamp(12px, 3vw, 44px) 40px;
+}
+
+.page-header {
+  display: flex;
+  margin-bottom: 18px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: #85ffbb;
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.8rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.instructions {
+  max-width: 420px;
+  margin: 0;
+  color: #84958d;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.rotate-note {
+  display: none;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-left: 2px solid #85ffbb;
+  background: rgba(133, 255, 187, 0.06);
+  color: #b8c7c0;
+  font-size: 0.78rem;
+}
+
+#game {
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid #294239;
+  background: #0c1412;
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.35);
+}
+
+#game canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .page-header {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .instructions {
+    text-align: left;
+  }
+
+  .rotate-note {
+    display: block;
+  }
+}

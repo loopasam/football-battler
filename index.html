@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c1412" />
+    <meta
+      name="description"
+      content="A wireframe playtest of the Football Battler core game loop."
+    />
+    <title>Football Battler — Core Loop Playtest</title>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Core-loop prototype</p>
+          <h1>Football Battler</h1>
+        </div>
+        <p class="instructions">Click the action button or press Space to resolve each attack.</p>
+      </header>
+      <p class="rotate-note">Turn your device sideways for a clearer view of the full pitch.</p>
+      <div id="game" aria-label="Football Battler game prototype"></div>
+      <p id="game-status" class="sr-only" role="status" aria-live="polite"></p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

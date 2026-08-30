@@ -1,4 +1,4 @@
-name: Deploy Football Battler to GitHub Pages
+name: Test and deploy Football Battler
 
 on:
   push:
@@ -15,20 +15,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test game rules
+        run: npm test
+      - name: Build prototype
+        run: npm run build
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
-      - name: Upload placeholder site
+      - name: Upload prototype
         uses: actions/upload-pages-artifact@v5
         with:
-          path: public
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

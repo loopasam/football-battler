@@ -124,7 +124,7 @@ export function resolveShot(state: MatchState, damage: number): MatchState {
   const updatedDefender: TeamState = {
     ...defender,
     score: defender.score,
-    defense: goal ? defender.maxDefense : defenseAfter,
+    defense: defenseAfter,
   };
   const updatedAttacker: TeamState = {
     ...state[state.attacking],

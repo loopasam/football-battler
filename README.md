@@ -13,7 +13,7 @@ A wireframe Phaser prototype for validating the Football Battler core loop.
 - Four guaranteed passes fill the shared Build-Up track.
 - The player holding the ball when Build-Up is full takes the shot.
 - Shot damage reduces the opposing team's persistent Defense.
-- Reducing Defense to zero scores one point and resets that Defense.
+- Reducing Defense to zero scores one point. Exhausted Defense stays at zero, so every later shot scores again.
 - The team with the most points after round five wins.
 
 ## Development

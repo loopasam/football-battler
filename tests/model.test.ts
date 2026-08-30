@@ -60,13 +60,22 @@ describe('Football Battler match model', () => {
     expect(match.attacking).toBe('home');
   });
 
-  it('awards one point and resets defense when a shot breaks it', () => {
+  it('awards one point and leaves defense exhausted when a shot breaks it', () => {
     let match = createMatch();
     match = playAttack(match, 40);
 
     expect(match.home.score).toBe(1);
-    expect(match.away.defense).toBe(40);
+    expect(match.away.defense).toBe(0);
     expect(match.lastShot).toMatchObject({ goal: true, defenseAfter: 0 });
+  });
+
+  it('scores every later shot against an exhausted defense', () => {
+    let match = playAttack(createMatch(), 40);
+    match = playAttack(match, 7);
+    match = playAttack(match, 11);
+
+    expect(match.home.score).toBe(2);
+    expect(match.away.defense).toBe(0);
   });
 
   it('ends after both teams have attacked in round five', () => {
@@ -78,7 +87,7 @@ describe('Football Battler match model', () => {
 
     expect(match.phase).toBe('finished');
     expect(match.round).toBe(MAX_ROUNDS);
-    expect(match.home.score).toBe(1);
+    expect(match.home.score).toBe(2);
     expect(match.away.score).toBe(0);
     expect(getWinner(match)).toBe('home');
   });

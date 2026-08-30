@@ -193,7 +193,6 @@ export class GameScene extends Phaser.Scene {
     if (this.locked) return;
     if (this.match.phase === 'finished') {
       this.restartMatch();
-      return;
     }
     this.playAttack();
   }
@@ -201,7 +200,7 @@ export class GameScene extends Phaser.Scene {
   private playAttack(): void {
     this.locked = true;
     this.buttonBackground.disableInteractive().setAlpha(0.42);
-    this.buttonText.setText('ATTACK IN PROGRESS');
+    this.buttonText.setText('MATCH IN PROGRESS');
     this.match = startAttack(this.match);
     this.eventText.setText('POSSESSION STARTED').setColor(this.toCss(this.sideColor(this.match.attacking)));
     this.updatePresentation();
@@ -211,7 +210,7 @@ export class GameScene extends Phaser.Scene {
     const start = CARD_POSITIONS[route[0]];
     this.ball.setPosition(start.x, start.y + 51).setVisible(true);
     this.highlightCard(route[0]);
-    this.time.delayedCall(350, () => this.animatePass(route, 1));
+    this.time.delayedCall(260, () => this.animatePass(route, 1));
   }
 
   private animatePass(route: string[], routeIndex: number): void {
@@ -231,7 +230,7 @@ export class GameScene extends Phaser.Scene {
       targets: this.ball,
       x: target.x,
       y: target.y + 51,
-      duration: 520,
+      duration: 400,
       ease: 'Sine.easeInOut',
       onComplete: () => {
         line.destroy();
@@ -239,7 +238,7 @@ export class GameScene extends Phaser.Scene {
         this.highlightCard(targetId);
         this.updatePresentation();
         this.announce(`Pass ${routeIndex} completed. Build-Up ${this.match.buildUp} of ${BUILD_UP_TARGET}.`);
-        this.time.delayedCall(220, () => this.animatePass(route, routeIndex + 1));
+        this.time.delayedCall(140, () => this.animatePass(route, routeIndex + 1));
       },
     });
   }
@@ -263,7 +262,7 @@ export class GameScene extends Phaser.Scene {
       x: goal.x,
       y: goal.y,
       scale: 1.65,
-      duration: 660,
+      duration: 520,
       ease: 'Quad.easeIn',
       onComplete: () => {
         line.destroy();
@@ -288,7 +287,7 @@ export class GameScene extends Phaser.Scene {
           this.announce(`${this.sideLabel(defendingSide)} Defense reduced to ${shot.defenseAfter}.`);
         }
 
-        this.time.delayedCall(1150, () => this.finishAttack());
+        this.time.delayedCall(800, () => this.finishAttack());
       },
     });
   }
@@ -299,7 +298,7 @@ export class GameScene extends Phaser.Scene {
       const result = winner === 'draw' ? 'FULL TIME • DRAW' : `FULL TIME • ${this.sideLabel(winner ?? 'home')} WINS`;
       this.updatePresentation(result);
       this.eventText.setColor(this.toCss(COLORS.paper));
-      this.buttonText.setText('RESTART MATCH');
+      this.buttonText.setText('PLAY AGAIN');
       this.buttonBackground.setAlpha(1).setInteractive({ useHandCursor: true });
       this.locked = false;
       this.announce(`Full time. Final score Home ${this.match.home.score}, Away ${this.match.away.score}. ${result}.`);
@@ -309,9 +308,10 @@ export class GameScene extends Phaser.Scene {
     const nextStart = CARD_POSITIONS[ROUTES[this.match.attacking][0]];
     this.ball.setPosition(nextStart.x, nextStart.y + 51);
     this.highlightCard(ROUTES[this.match.attacking][0]);
-    this.updatePresentation(`${this.sideLabel(this.match.attacking)} ATTACK READY`);
-    this.buttonBackground.setAlpha(1).setInteractive({ useHandCursor: true });
-    this.locked = false;
+    this.updatePresentation(`${this.sideLabel(this.match.attacking)} POSSESSION`);
+    this.buttonText.setText('MATCH IN PROGRESS');
+    this.announce(`${this.sideLabel(this.match.attacking)} prepares the next possession.`);
+    this.time.delayedCall(500, () => this.playAttack());
   }
 
   private restartMatch(): void {
@@ -351,7 +351,7 @@ export class GameScene extends Phaser.Scene {
       this.actionText
         .setText(`${this.sideLabel(this.match.attacking)} POSSESSION • BUILD-UP 0 / ${BUILD_UP_TARGET}`)
         .setColor(this.toCss(this.sideColor(this.match.attacking)));
-      this.buttonText.setText(`PLAY ${this.sideLabel(this.match.attacking)} ATTACK`);
+      this.buttonText.setText('PLAY GAME');
     } else if (this.match.phase === 'passing') {
       this.actionText
         .setText(`${this.sideLabel(this.match.attacking)} PASSING • BUILD-UP ${this.match.buildUp} / ${BUILD_UP_TARGET}`)

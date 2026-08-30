@@ -15,20 +15,20 @@ import {
 } from './model';
 
 const COLORS = {
-  background: 0x0c1412,
-  pitch: 0x101d19,
-  pitchAlt: 0x13231e,
-  line: 0x416257,
-  faintLine: 0x284139,
-  paper: 0xe9f1e6,
-  muted: 0x84958d,
-  ink: 0x08100e,
-  home: 0x85ffbb,
-  away: 0xffb36b,
-  card: 0x111b18,
-  ball: 0xf8ff9a,
-  danger: 0xff7777,
-  button: 0xe9f1e6,
+  background: 0xf8f7f2,
+  pitch: 0xeff4ed,
+  pitchAlt: 0xe5ede3,
+  line: 0x879c90,
+  faintLine: 0xc8d4cd,
+  paper: 0x18211d,
+  muted: 0x66776e,
+  ink: 0xffffff,
+  home: 0x177a52,
+  away: 0xc45b27,
+  card: 0xffffff,
+  ball: 0xf1c644,
+  danger: 0xd44b4b,
+  button: 0x18211d,
 };
 
 interface Point {
@@ -138,18 +138,9 @@ export class GameScene extends Phaser.Scene {
       graphics.lineBetween(20, 160 + zone * zoneHeight, 580, 160 + zone * zoneHeight);
     }
 
-    this.addText(30, 168, 'AWAY • DEFENSE', 9, COLORS.muted);
-    this.addText(30, 278, 'AWAY • MIDFIELD', 9, COLORS.muted);
-    this.addText(30, 388, 'AWAY • ATTACK', 9, COLORS.muted);
-    this.addText(30, 498, 'HOME • ATTACK', 9, COLORS.muted);
-    this.addText(30, 608, 'HOME • MIDFIELD', 9, COLORS.muted);
-    this.addText(30, 718, 'HOME • DEFENSE', 9, COLORS.muted);
-
     graphics.lineStyle(3, COLORS.paper, 0.72);
     graphics.strokeRect(220, 144, 160, 16);
     graphics.strokeRect(220, 820, 160, 16);
-    this.addText(300, 142, 'AWAY GOAL', 9, COLORS.muted).setOrigin(0.5, 1);
-    this.addText(300, 840, 'HOME GOAL', 9, COLORS.muted).setOrigin(0.5, 0);
 
     this.eventText = this.addText(300, 868, '', 16, COLORS.paper).setOrigin(0.5, 0);
   }
@@ -162,17 +153,12 @@ export class GameScene extends Phaser.Scene {
   private drawCard(card: PlayerCard, color: number): void {
     const position = CARD_POSITIONS[card.id];
     const container = this.add.container(position.x, position.y);
-    const body = this.add.rectangle(0, 0, 180, 92, COLORS.card).setStrokeStyle(2, color, 0.75);
-    const role = this.add.rectangle(-70, -34, 38, 18, color);
+    const body = this.add.rectangle(0, 0, 180, 82, COLORS.card).setStrokeStyle(2, color, 0.75);
 
     container.add([
       body,
-      role,
-      this.addText(-70, -34, card.role, 10, COLORS.ink).setOrigin(0.5),
-      this.addText(-45, -41, card.name.toUpperCase(), 12, COLORS.paper),
-      this.addText(-70, -4, `ATK ${String(card.attack).padStart(2, '0')}`, 19, color),
-      this.addText(70, -4, `DEF ${String(card.defense).padStart(2, '0')}`, 19, COLORS.paper).setOrigin(1, 0),
-      this.addText(0, 29, 'STATIC CARD', 9, COLORS.muted).setOrigin(0.5, 0),
+      this.addText(0, -28, `ATTACK ${String(card.attack).padStart(2, '0')}`, 17, color).setOrigin(0.5, 0),
+      this.addText(0, 4, `DEFENSE ${String(card.defense).padStart(2, '0')}`, 17, COLORS.paper).setOrigin(0.5, 0),
     ]);
     this.cardBodies.set(card.id, body);
   }
@@ -180,7 +166,7 @@ export class GameScene extends Phaser.Scene {
   private createBall(): void {
     const start = CARD_POSITIONS[ROUTES.home[0]];
     this.ball = this.add.circle(start.x, start.y + 51, 10, COLORS.ball)
-      .setStrokeStyle(3, COLORS.ink)
+      .setStrokeStyle(3, COLORS.paper)
       .setDepth(20);
   }
 
@@ -264,9 +250,9 @@ export class GameScene extends Phaser.Scene {
     const line = this.add.graphics().setDepth(5);
     line.lineStyle(4, COLORS.ball, 0.72);
     line.lineBetween(this.ball.x, this.ball.y, goal.x, goal.y);
-    this.eventText.setText(`SHOT • ${shooter.name.toUpperCase()} • ATK ${shooter.attack}`);
+    this.eventText.setText(`SHOT • ATTACK ${shooter.attack}`);
     this.actionText.setText('CHANCE CREATED • SHOT RELEASED').setColor(this.toCss(COLORS.ball));
-    this.announce(`${shooter.name} shoots with Attack ${shooter.attack}.`);
+    this.announce(`${this.sideLabel(attackingSide)} shoots with Attack ${shooter.attack}.`);
 
     this.tweens.add({
       targets: this.ball,

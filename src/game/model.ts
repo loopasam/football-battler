@@ -3,8 +3,15 @@ export const BUILD_UP_TARGET = 4;
 
 export type Side = 'home' | 'away';
 export type MatchPhase = 'ready' | 'passing' | 'shooting' | 'finished';
-export type PlayerLayer = 'back' | 'middle' | 'front';
-export type PlayerLane = 'left' | 'center' | 'right';
+export type PlayerLayer = 'goalkeeper' | 'defense' | 'midfield' | 'attack';
+export type PlayerLane =
+  | 'far-left'
+  | 'left'
+  | 'inside-left'
+  | 'center'
+  | 'inside-right'
+  | 'right'
+  | 'far-right';
 
 export interface PlayerDefinition {
   id: string;
@@ -47,22 +54,34 @@ export interface MatchState {
 export const HOME_TEAM: TeamDefinition = {
   name: 'Home',
   players: [
-    { id: 'home-gk', name: 'H. Keeper', attack: 2, defense: 12, layer: 'back', lane: 'left' },
-    { id: 'home-cb', name: 'H. Anchor', attack: 4, defense: 10, layer: 'back', lane: 'right' },
-    { id: 'home-m1', name: 'H. Link', attack: 6, defense: 7, layer: 'middle', lane: 'right' },
-    { id: 'home-m2', name: 'H. Pivot', attack: 5, defense: 6, layer: 'middle', lane: 'left' },
-    { id: 'home-st', name: 'H. Finisher', attack: 11, defense: 5, layer: 'front', lane: 'center' },
+    { id: 'home-gk', name: 'H. Keeper', attack: 1, defense: 6, layer: 'goalkeeper', lane: 'center' },
+    { id: 'home-lb', name: 'H. Left Back', attack: 2, defense: 4, layer: 'defense', lane: 'far-left' },
+    { id: 'home-lcb', name: 'H. Left Center Back', attack: 2, defense: 5, layer: 'defense', lane: 'inside-left' },
+    { id: 'home-rcb', name: 'H. Right Center Back', attack: 3, defense: 5, layer: 'defense', lane: 'inside-right' },
+    { id: 'home-rb', name: 'H. Right Back', attack: 3, defense: 4, layer: 'defense', lane: 'far-right' },
+    { id: 'home-lm', name: 'H. Left Midfield', attack: 5, defense: 3, layer: 'midfield', lane: 'left' },
+    { id: 'home-cm', name: 'H. Center Midfield', attack: 6, defense: 4, layer: 'midfield', lane: 'center' },
+    { id: 'home-rm', name: 'H. Right Midfield', attack: 5, defense: 3, layer: 'midfield', lane: 'right' },
+    { id: 'home-lw', name: 'H. Left Wing', attack: 8, defense: 2, layer: 'attack', lane: 'left' },
+    { id: 'home-st', name: 'H. Striker', attack: 11, defense: 3, layer: 'attack', lane: 'center' },
+    { id: 'home-rw', name: 'H. Right Wing', attack: 9, defense: 1, layer: 'attack', lane: 'right' },
   ],
 };
 
 export const AWAY_TEAM: TeamDefinition = {
   name: 'Away',
   players: [
-    { id: 'away-gk', name: 'A. Keeper', attack: 2, defense: 12, layer: 'back', lane: 'left' },
-    { id: 'away-cb', name: 'A. Anchor', attack: 4, defense: 10, layer: 'back', lane: 'right' },
-    { id: 'away-m1', name: 'A. Link', attack: 5, defense: 7, layer: 'middle', lane: 'right' },
-    { id: 'away-m2', name: 'A. Pivot', attack: 6, defense: 6, layer: 'middle', lane: 'left' },
-    { id: 'away-st', name: 'A. Finisher', attack: 7, defense: 5, layer: 'front', lane: 'center' },
+    { id: 'away-gk', name: 'A. Keeper', attack: 1, defense: 6, layer: 'goalkeeper', lane: 'center' },
+    { id: 'away-ld', name: 'A. Left Defense', attack: 2, defense: 6, layer: 'defense', lane: 'left' },
+    { id: 'away-cd', name: 'A. Center Defense', attack: 2, defense: 6, layer: 'defense', lane: 'center' },
+    { id: 'away-rd', name: 'A. Right Defense', attack: 3, defense: 6, layer: 'defense', lane: 'right' },
+    { id: 'away-lw', name: 'A. Left Wide', attack: 4, defense: 2, layer: 'midfield', lane: 'far-left' },
+    { id: 'away-lm', name: 'A. Left Midfield', attack: 5, defense: 3, layer: 'midfield', lane: 'inside-left' },
+    { id: 'away-cm', name: 'A. Center Midfield', attack: 6, defense: 3, layer: 'midfield', lane: 'center' },
+    { id: 'away-rm', name: 'A. Right Midfield', attack: 5, defense: 3, layer: 'midfield', lane: 'inside-right' },
+    { id: 'away-rw', name: 'A. Right Wide', attack: 4, defense: 2, layer: 'midfield', lane: 'far-right' },
+    { id: 'away-lf', name: 'A. Left Forward', attack: 7, defense: 2, layer: 'attack', lane: 'inside-left' },
+    { id: 'away-rf', name: 'A. Right Forward', attack: 6, defense: 1, layer: 'attack', lane: 'inside-right' },
   ],
 };
 

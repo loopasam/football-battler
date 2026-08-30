@@ -9,7 +9,8 @@ A wireframe Phaser prototype for validating the Football Battler core loop.
 ## Current rules
 
 - Five rounds, with one Home attack and one Away attack per round.
-- Five player nodes per team form back, middle, and front graph layers.
+- Eleven player nodes per team form goalkeeper, defense, midfield, and attack graph layers.
+- Home uses a static 4–3–3 formation; Away uses a contrasting static 3–5–2.
 - Placement generates lateral edges within layers and passing edges between adjacent layers.
 - Nodes show only abbreviated Attack (`A`) and Defense (`D`) values.
 - Four guaranteed passes follow a valid graph route and fill the shared Build-Up track.

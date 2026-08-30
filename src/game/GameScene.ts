@@ -46,14 +46,18 @@ interface Point {
 }
 
 const LANE_X: Record<PlayerLane, number> = {
-  left: 155,
+  'far-left': 70,
+  left: 145,
+  'inside-left': 220,
   center: 300,
-  right: 445,
+  'inside-right': 380,
+  right: 455,
+  'far-right': 530,
 };
 
 const LAYER_Y: Record<Side, Record<PlayerLayer, number>> = {
-  away: { back: 215, middle: 325, front: 435 },
-  home: { back: 765, middle: 655, front: 545 },
+  away: { goalkeeper: 201, defense: 284, midfield: 366, attack: 449 },
+  home: { goalkeeper: 779, defense: 696, midfield: 614, attack: 531 },
 };
 
 const TEAM_GRAPHS: Record<Side, TeamGraph> = {
@@ -148,8 +152,8 @@ export class GameScene extends Phaser.Scene {
     graphics.fillStyle(COLORS.pitch, 1);
     graphics.fillRect(20, 160, 560, 660);
 
-    const zoneHeight = 110;
-    for (let zone = 0; zone < 6; zone += 1) {
+    const zoneHeight = 82.5;
+    for (let zone = 0; zone < 8; zone += 1) {
       if (zone % 2 === 0) {
         graphics.fillStyle(COLORS.pitchAlt, 0.72);
         graphics.fillRect(20, 160 + zone * zoneHeight, 560, zoneHeight);
@@ -161,7 +165,7 @@ export class GameScene extends Phaser.Scene {
     graphics.lineBetween(20, 490, 580, 490);
     graphics.strokeCircle(300, 490, 54);
     graphics.lineStyle(1, COLORS.faintLine, 0.95);
-    for (let zone = 1; zone < 6; zone += 1) {
+    for (let zone = 1; zone < 8; zone += 1) {
       graphics.lineBetween(20, 160 + zone * zoneHeight, 580, 160 + zone * zoneHeight);
     }
 
@@ -188,22 +192,22 @@ export class GameScene extends Phaser.Scene {
   private drawNode(player: PlayerDefinition, color: number): void {
     const position = this.nodePosition(player.id);
     const container = this.add.container(position.x, position.y).setDepth(10);
-    const body = this.add.circle(0, 0, 41, COLORS.node).setStrokeStyle(3, color, 0.82);
-    const divider = this.add.rectangle(0, 0, 48, 1, color, 0.2);
+    const body = this.add.circle(0, 0, 30, COLORS.node).setStrokeStyle(3, color, 0.82);
+    const divider = this.add.rectangle(0, 0, 38, 1, color, 0.2);
 
     container.add([
       body,
       divider,
-      this.addText(0, -24, `A ${player.attack}`, 14, color).setOrigin(0.5, 0),
-      this.addText(0, 7, `D ${player.defense}`, 14, COLORS.paper).setOrigin(0.5, 0),
+      this.addText(0, -19, `A ${player.attack}`, 11, color).setOrigin(0.5, 0),
+      this.addText(0, 5, `D ${player.defense}`, 11, COLORS.paper).setOrigin(0.5, 0),
     ]);
     this.nodeBodies.set(player.id, body);
   }
 
   private createBall(): void {
     const start = this.nodePosition(ROUTES.home[0]);
-    this.ball = this.add.circle(start.x, start.y, 8, COLORS.ball)
-      .setStrokeStyle(3, COLORS.paper)
+    this.ball = this.add.circle(start.x, start.y, 6, COLORS.ball)
+      .setStrokeStyle(2, COLORS.paper)
       .setDepth(20);
   }
 

@@ -25,15 +25,20 @@ export interface TeamGraph {
 }
 
 const LAYER_INDEX: Record<PlayerLayer, number> = {
-  back: 0,
-  middle: 1,
-  front: 2,
+  goalkeeper: 0,
+  defense: 1,
+  midfield: 2,
+  attack: 3,
 };
 
 const LANE_INDEX: Record<PlayerLane, number> = {
-  left: -1,
+  'far-left': -3,
+  left: -2,
+  'inside-left': -1,
   center: 0,
-  right: 1,
+  'inside-right': 1,
+  right: 2,
+  'far-right': 3,
 };
 
 export function createTeamGraph(team: TeamDefinition): TeamGraph {
@@ -43,43 +48,49 @@ export function createTeamGraph(team: TeamDefinition): TeamGraph {
     laneIndex: LANE_INDEX[player.lane],
   }));
   const edges: PassEdge[] = [];
+  const connectionKeys = new Set<string>();
+  const addEdge = (from: string, to: string, kind: PassEdgeKind): void => {
+    const key = edgeKey(from, to);
+    if (connectionKeys.has(key)) return;
+    connectionKeys.add(key);
+    edges.push({ from, to, kind });
+  };
+  const layerIndexes = [...new Set(nodes.map((node) => node.layerIndex))].sort((left, right) => left - right);
 
-  for (let layerIndex = 0; layerIndex <= 2; layerIndex += 1) {
+  layerIndexes.forEach((layerIndex) => {
     const layerNodes = nodes
       .filter((node) => node.layerIndex === layerIndex)
       .sort((left, right) => left.laneIndex - right.laneIndex);
 
     for (let index = 0; index < layerNodes.length - 1; index += 1) {
-      edges.push({
-        from: layerNodes[index].player.id,
-        to: layerNodes[index + 1].player.id,
-        kind: 'lateral',
-      });
+      addEdge(layerNodes[index].player.id, layerNodes[index + 1].player.id, 'lateral');
     }
-  }
+  });
 
-  for (let layerIndex = 0; layerIndex < 2; layerIndex += 1) {
-    const lowerNodes = nodes.filter((node) => node.layerIndex === layerIndex);
-    const upperNodes = nodes.filter((node) => node.layerIndex === layerIndex + 1);
+  for (let index = 0; index < layerIndexes.length - 1; index += 1) {
+    const lowerNodes = nodes.filter((node) => node.layerIndex === layerIndexes[index]);
+    const upperNodes = nodes.filter((node) => node.layerIndex === layerIndexes[index + 1]);
 
     lowerNodes.forEach((lowerNode) => {
-      const compatible = upperNodes.filter(
-        (upperNode) => Math.abs(lowerNode.laneIndex - upperNode.laneIndex) <= 1,
+      const closestDistance = Math.min(
+        ...upperNodes.map((upperNode) => Math.abs(lowerNode.laneIndex - upperNode.laneIndex)),
       );
-      const targets = compatible.length > 0
-        ? compatible
-        : [...upperNodes].sort(
-          (left, right) => Math.abs(lowerNode.laneIndex - left.laneIndex)
-            - Math.abs(lowerNode.laneIndex - right.laneIndex),
-        ).slice(0, 1);
-
-      targets.forEach((upperNode) => {
-        edges.push({
-          from: lowerNode.player.id,
-          to: upperNode.player.id,
-          kind: 'forward',
+      upperNodes
+        .filter((upperNode) => Math.abs(lowerNode.laneIndex - upperNode.laneIndex) === closestDistance)
+        .forEach((upperNode) => {
+          addEdge(lowerNode.player.id, upperNode.player.id, 'forward');
         });
-      });
+    });
+
+    upperNodes.forEach((upperNode) => {
+      const closestDistance = Math.min(
+        ...lowerNodes.map((lowerNode) => Math.abs(lowerNode.laneIndex - upperNode.laneIndex)),
+      );
+      lowerNodes
+        .filter((lowerNode) => Math.abs(lowerNode.laneIndex - upperNode.laneIndex) === closestDistance)
+        .forEach((lowerNode) => {
+          addEdge(lowerNode.player.id, upperNode.player.id, 'forward');
+        });
     });
   }
 

@@ -31,6 +31,8 @@ const COLORS = {
   button: 0x18211d,
 };
 
+const TEXT_RESOLUTION = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+
 interface Point {
   x: number;
   y: number;
@@ -77,6 +79,8 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(COLORS.background);
+    this.cameras.main.setZoom(2);
+    this.cameras.main.centerOn(300, 500);
     this.drawHeader();
     this.drawPitch();
     this.drawTeam(HOME_TEAM, 'home');
@@ -388,6 +392,7 @@ export class GameScene extends Phaser.Scene {
       fontFamily: 'Courier New, monospace',
       fontSize: `${size}px`,
       fontStyle: 'bold',
+      resolution: TEXT_RESOLUTION,
     });
   }
 

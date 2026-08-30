@@ -5,8 +5,8 @@ import { GameScene } from './game/GameScene';
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  width: 1280,
-  height: 720,
+  width: 600,
+  height: 1000,
   backgroundColor: '#0c1412',
   scene: [GameScene],
   scale: {

@@ -37,16 +37,16 @@ interface Point {
 }
 
 const CARD_POSITIONS: Record<string, Point> = {
-  'home-gk': { x: 112, y: 375 },
-  'home-cb': { x: 248, y: 375 },
-  'home-m1': { x: 386, y: 292 },
-  'home-m2': { x: 386, y: 458 },
-  'home-st': { x: 530, y: 375 },
-  'away-gk': { x: 1168, y: 375 },
-  'away-cb': { x: 1032, y: 375 },
-  'away-m1': { x: 894, y: 292 },
-  'away-m2': { x: 894, y: 458 },
-  'away-st': { x: 750, y: 375 },
+  'away-gk': { x: 165, y: 215 },
+  'away-cb': { x: 435, y: 215 },
+  'away-m1': { x: 435, y: 325 },
+  'away-m2': { x: 165, y: 325 },
+  'away-st': { x: 300, y: 435 },
+  'home-st': { x: 300, y: 545 },
+  'home-m2': { x: 165, y: 655 },
+  'home-m1': { x: 435, y: 655 },
+  'home-cb': { x: 435, y: 765 },
+  'home-gk': { x: 165, y: 765 },
 };
 
 const ROUTES: Record<Side, string[]> = {
@@ -90,69 +90,68 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawHeader(): void {
-    this.addText(34, 20, 'HOME', 18, COLORS.home);
-    this.addText(1246, 20, 'AWAY', 18, COLORS.away).setOrigin(1, 0);
+    this.addText(20, 16, 'HOME', 17, COLORS.home);
+    this.addText(580, 16, 'AWAY', 17, COLORS.away).setOrigin(1, 0);
 
-    this.addText(34, 48, 'TEAM DEFENSE', 11, COLORS.muted);
-    this.addText(1246, 48, 'TEAM DEFENSE', 11, COLORS.muted).setOrigin(1, 0);
+    this.addText(20, 44, 'TEAM DEFENSE', 10, COLORS.muted);
+    this.addText(580, 44, 'TEAM DEFENSE', 10, COLORS.muted).setOrigin(1, 0);
 
-    this.add.rectangle(164, 78, 260, 12, COLORS.faintLine).setOrigin(0.5);
-    this.add.rectangle(1116, 78, 260, 12, COLORS.faintLine).setOrigin(0.5);
-    this.homeDefenseFill = this.add.rectangle(34, 78, 260, 12, COLORS.home).setOrigin(0, 0.5);
-    this.awayDefenseFill = this.add.rectangle(986, 78, 260, 12, COLORS.away).setOrigin(0, 0.5);
-    this.homeDefenseText = this.addText(34, 91, '', 12, COLORS.paper);
-    this.awayDefenseText = this.addText(1246, 91, '', 12, COLORS.paper).setOrigin(1, 0);
+    this.add.rectangle(95, 72, 150, 11, COLORS.faintLine).setOrigin(0.5);
+    this.add.rectangle(505, 72, 150, 11, COLORS.faintLine).setOrigin(0.5);
+    this.homeDefenseFill = this.add.rectangle(20, 72, 150, 11, COLORS.home).setOrigin(0, 0.5);
+    this.awayDefenseFill = this.add.rectangle(430, 72, 150, 11, COLORS.away).setOrigin(0, 0.5);
+    this.homeDefenseText = this.addText(20, 86, '', 11, COLORS.paper);
+    this.awayDefenseText = this.addText(580, 86, '', 11, COLORS.paper).setOrigin(1, 0);
 
-    this.scoreText = this.addText(640, 28, '0 — 0', 34, COLORS.paper).setOrigin(0.5, 0);
-    this.roundText = this.addText(640, 72, 'ROUND 1 / 5', 13, COLORS.muted).setOrigin(0.5, 0);
+    this.scoreText = this.addText(300, 22, '0 — 0', 31, COLORS.paper).setOrigin(0.5, 0);
+    this.roundText = this.addText(300, 65, 'ROUND 1 / 5', 12, COLORS.muted).setOrigin(0.5, 0);
 
-    const pipStartX = 580;
+    const pipStartX = 248;
     for (let index = 0; index < BUILD_UP_TARGET; index += 1) {
-      const pip = this.add.rectangle(pipStartX + index * 40, 120, 28, 9, COLORS.faintLine);
+      const pip = this.add.rectangle(pipStartX + index * 34, 112, 24, 9, COLORS.faintLine);
       this.buildPips.push(pip);
     }
-    this.addText(548, 113, 'BUILD', 10, COLORS.muted).setOrigin(1, 0);
-    this.addText(746, 110, '→ SHOT', 12, COLORS.muted);
-    this.actionText = this.addText(640, 135, '', 12, COLORS.paper).setOrigin(0.5, 0);
+    this.addText(225, 105, 'BUILD', 10, COLORS.muted).setOrigin(1, 0);
+    this.addText(382, 103, '→ SHOT', 12, COLORS.muted);
+    this.actionText = this.addText(300, 132, '', 12, COLORS.paper).setOrigin(0.5, 0);
   }
 
   private drawPitch(): void {
     const graphics = this.add.graphics();
     graphics.fillStyle(COLORS.pitch, 1);
-    graphics.fillRect(34, 168, 1212, 420);
+    graphics.fillRect(20, 160, 560, 660);
 
-    const zoneWidth = 196;
+    const zoneHeight = 110;
     for (let zone = 0; zone < 6; zone += 1) {
       if (zone % 2 === 0) {
         graphics.fillStyle(COLORS.pitchAlt, 0.72);
-        graphics.fillRect(34 + zone * zoneWidth, 168, zoneWidth, 420);
+        graphics.fillRect(20, 160 + zone * zoneHeight, 560, zoneHeight);
       }
     }
 
     graphics.lineStyle(2, COLORS.line, 0.9);
-    graphics.strokeRect(34, 168, 1212, 420);
-    graphics.lineBetween(640, 168, 640, 588);
-    graphics.strokeCircle(640, 378, 66);
+    graphics.strokeRect(20, 160, 560, 660);
+    graphics.lineBetween(20, 490, 580, 490);
+    graphics.strokeCircle(300, 490, 54);
     graphics.lineStyle(1, COLORS.faintLine, 0.95);
     for (let zone = 1; zone < 6; zone += 1) {
-      graphics.lineBetween(34 + zone * zoneWidth, 168, 34 + zone * zoneWidth, 588);
+      graphics.lineBetween(20, 160 + zone * zoneHeight, 580, 160 + zone * zoneHeight);
     }
-    graphics.lineBetween(34, 378, 1246, 378);
 
-    this.addText(132, 180, 'DEFENSE', 10, COLORS.muted).setOrigin(0.5, 0);
-    this.addText(328, 180, 'MIDFIELD', 10, COLORS.muted).setOrigin(0.5, 0);
-    this.addText(524, 180, 'ATTACK', 10, COLORS.muted).setOrigin(0.5, 0);
-    this.addText(756, 180, 'ATTACK', 10, COLORS.muted).setOrigin(0.5, 0);
-    this.addText(952, 180, 'MIDFIELD', 10, COLORS.muted).setOrigin(0.5, 0);
-    this.addText(1148, 180, 'DEFENSE', 10, COLORS.muted).setOrigin(0.5, 0);
+    this.addText(30, 168, 'AWAY • DEFENSE', 9, COLORS.muted);
+    this.addText(30, 278, 'AWAY • MIDFIELD', 9, COLORS.muted);
+    this.addText(30, 388, 'AWAY • ATTACK', 9, COLORS.muted);
+    this.addText(30, 498, 'HOME • ATTACK', 9, COLORS.muted);
+    this.addText(30, 608, 'HOME • MIDFIELD', 9, COLORS.muted);
+    this.addText(30, 718, 'HOME • DEFENSE', 9, COLORS.muted);
 
     graphics.lineStyle(3, COLORS.paper, 0.72);
-    graphics.strokeRect(18, 318, 16, 120);
-    graphics.strokeRect(1246, 318, 16, 120);
-    this.addText(22, 446, 'GOAL', 9, COLORS.muted).setAngle(-90);
-    this.addText(1258, 310, 'GOAL', 9, COLORS.muted).setAngle(90);
+    graphics.strokeRect(220, 144, 160, 16);
+    graphics.strokeRect(220, 820, 160, 16);
+    this.addText(300, 142, 'AWAY GOAL', 9, COLORS.muted).setOrigin(0.5, 1);
+    this.addText(300, 840, 'HOME GOAL', 9, COLORS.muted).setOrigin(0.5, 0);
 
-    this.eventText = this.addText(640, 610, '', 17, COLORS.paper).setOrigin(0.5, 0);
+    this.eventText = this.addText(300, 868, '', 16, COLORS.paper).setOrigin(0.5, 0);
   }
 
   private drawTeam(team: TeamDefinition, side: Side): void {
@@ -163,17 +162,17 @@ export class GameScene extends Phaser.Scene {
   private drawCard(card: PlayerCard, color: number): void {
     const position = CARD_POSITIONS[card.id];
     const container = this.add.container(position.x, position.y);
-    const body = this.add.rectangle(0, 0, 112, 82, COLORS.card).setStrokeStyle(2, color, 0.75);
-    const role = this.add.rectangle(-40, -29, 28, 16, color);
+    const body = this.add.rectangle(0, 0, 180, 92, COLORS.card).setStrokeStyle(2, color, 0.75);
+    const role = this.add.rectangle(-70, -34, 38, 18, color);
 
     container.add([
       body,
       role,
-      this.addText(-40, -29, card.role, 9, COLORS.ink).setOrigin(0.5),
-      this.addText(-21, -29, card.name.toUpperCase(), 10, COLORS.paper),
-      this.addText(-42, 3, `ATK ${String(card.attack).padStart(2, '0')}`, 14, color),
-      this.addText(42, 3, `DEF ${String(card.defense).padStart(2, '0')}`, 14, COLORS.paper).setOrigin(1, 0),
-      this.addText(0, 27, 'STATIC CARD', 8, COLORS.muted).setOrigin(0.5, 0),
+      this.addText(-70, -34, card.role, 10, COLORS.ink).setOrigin(0.5),
+      this.addText(-45, -41, card.name.toUpperCase(), 12, COLORS.paper),
+      this.addText(-70, -4, `ATK ${String(card.attack).padStart(2, '0')}`, 19, color),
+      this.addText(70, -4, `DEF ${String(card.defense).padStart(2, '0')}`, 19, COLORS.paper).setOrigin(1, 0),
+      this.addText(0, 29, 'STATIC CARD', 9, COLORS.muted).setOrigin(0.5, 0),
     ]);
     this.cardBodies.set(card.id, body);
   }
@@ -186,10 +185,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createActionButton(): void {
-    this.buttonBackground = this.add.rectangle(640, 675, 310, 50, COLORS.button)
+    this.buttonBackground = this.add.rectangle(300, 950, 390, 70, COLORS.button)
       .setStrokeStyle(2, COLORS.ink)
       .setInteractive({ useHandCursor: true });
-    this.buttonText = this.addText(640, 675, '', 15, COLORS.ink).setOrigin(0.5);
+    this.buttonText = this.addText(300, 950, '', 18, COLORS.ink).setOrigin(0.5);
 
     this.buttonBackground.on('pointerover', () => {
       if (!this.locked) this.buttonBackground.setFillStyle(COLORS.home);
@@ -261,7 +260,7 @@ export class GameScene extends Phaser.Scene {
     const shooter = team.cards.find((card) => card.id === shooterId);
     if (!shooter) throw new Error(`Missing shooter card: ${shooterId}`);
 
-    const goal = attackingSide === 'home' ? { x: 1264, y: 378 } : { x: 16, y: 378 };
+    const goal = attackingSide === 'home' ? { x: 300, y: 144 } : { x: 300, y: 836 };
     const line = this.add.graphics().setDepth(5);
     line.lineStyle(4, COLORS.ball, 0.72);
     line.lineBetween(this.ball.x, this.ball.y, goal.x, goal.y);
@@ -345,8 +344,8 @@ export class GameScene extends Phaser.Scene {
     const homeRatio = homeDefense / this.match.home.maxDefense;
     const awayRatio = awayDefense / this.match.away.maxDefense;
 
-    this.homeDefenseFill.width = 260 * homeRatio;
-    this.awayDefenseFill.width = 260 * awayRatio;
+    this.homeDefenseFill.width = 150 * homeRatio;
+    this.awayDefenseFill.width = 150 * awayRatio;
     this.homeDefenseFill.setFillStyle(homeRatio <= 0.25 ? COLORS.danger : COLORS.home);
     this.awayDefenseFill.setFillStyle(awayRatio <= 0.25 ? COLORS.danger : COLORS.away);
     this.homeDefenseText.setText(`${homeDefense} / ${this.match.home.maxDefense}`);

@@ -27,14 +27,17 @@ body {
 }
 
 .page-shell {
-  width: min(1440px, 100%);
+  width: min(760px, 100%);
   margin: 0 auto;
   padding: 28px clamp(12px, 3vw, 44px) 40px;
 }
 
 .page-header {
   display: flex;
+  width: min(600px, 100%);
+  margin-right: auto;
   margin-bottom: 18px;
+  margin-left: auto;
   align-items: end;
   justify-content: space-between;
   gap: 24px;
@@ -67,19 +70,10 @@ h1 {
   text-align: right;
 }
 
-.rotate-note {
-  display: none;
-  margin: 0 0 12px;
-  padding: 8px 10px;
-  border-left: 2px solid #85ffbb;
-  background: rgba(133, 255, 187, 0.06);
-  color: #b8c7c0;
-  font-size: 0.78rem;
-}
-
 #game {
   overflow: hidden;
-  width: 100%;
+  width: min(600px, 100%);
+  margin: 0 auto;
   border: 1px solid #294239;
   background: #0c1412;
   box-shadow: 0 22px 80px rgba(0, 0, 0, 0.35);
@@ -112,7 +106,4 @@ h1 {
     text-align: left;
   }
 
-  .rotate-note {
-    display: block;
-  }
 }
